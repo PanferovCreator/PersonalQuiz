@@ -16,58 +16,36 @@ final class ResultViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        self.navigationItem.setHidesBackButton(true, animated: false)
+        navigationItem.setHidesBackButton(true, animated: false)
         
-        let animalsFromAnswers = getAnimalsFromAnswers(answerChosen)
-        let favoriteAnimal = getFavoritesAnimal(animalsFromAnswers)
-        
-        resultIconLabel.text = "Вы - \(favoriteAnimal.rawValue)"
-        resultLabel.text = favoriteAnimal.definition
-        
+        updateResult()
     }
     
     @IBAction func doneButtonPressed(_ sender: UIBarButtonItem) {
         dismiss(animated: true)
     }
     
-    private func getAnimalsFromAnswers(_ answers: [Answer]) -> [Animal] {
-        return answers.map { $0.animal }
-    }
-    
-    private func getFavoritesAnimal(_ animals: [Animal]) -> Animal {
-        
-        var favoriteAnimals: [Animal] = []
-        
-        var dog: [Animal] = []
-        var cat: [Animal] = []
-        var rabbit: [Animal] = []
-        var turtle: [Animal] = []
+}
+
+extension ResultViewController {
+    private func updateResult() {
+        var frequencyOfAnimals: [Animal: Int] = [:]
+        let animals = answerChosen.map { $0.animal}
         
         for animal in animals {
-            switch animal {
-            case Animal.dog:
-                dog.append(animal)
-            case Animal.cat:
-                cat.append(animal)
-            case Animal.rabbit:
-                rabbit.append(animal)
-            default:
-                turtle.append(animal)
-            }
+            frequencyOfAnimals[animal, default: 0] += 1
         }
         
-        if dog.count >= cat.count && dog.count >= rabbit.count && dog.count >= turtle.count {
-            favoriteAnimals += dog
-        } else if cat.count >= dog.count && cat.count >= rabbit.count && cat.count >= turtle.count {
-            favoriteAnimals += cat
-        } else if rabbit.count >= dog.count && rabbit.count >= cat.count && rabbit.count >= turtle.count {
-            favoriteAnimals += rabbit
-        } else {
-            favoriteAnimals += turtle
-        }
+        let sortedFrequencyOfAnimals = frequencyOfAnimals.sorted { $0.value > $1.value }
+        guard let mostFrequencyAnimal = sortedFrequencyOfAnimals.first?.key else { return }
         
-        let favoriteAnimal = favoriteAnimals.removeFirst()
-        return favoriteAnimal
+        updateUI(with: mostFrequencyAnimal)
+    }
+    
+    private func updateUI(with animal: Animal) {
+        resultIconLabel.text = "Вы - \(animal.rawValue)!"
+        resultLabel.text = animal.definition
     }
 }
     
+
